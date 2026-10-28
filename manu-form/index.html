@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="data:," />
+<title>Manu · Tidelli (formulário)</title>
+<style>
+  :root{
+    --verde:#18453E; --verde2:#1d554b; --creme:#F7F1E4; --areia:#EFE7D6;
+    --ink:#15241E; --moss:#4A6259; --linha:rgba(21,36,30,.14); --caramel:#CD7C44;
+    --serif:'Fraunces','The Seasons',Georgia,'Times New Roman',serif;
+    --sans:'Outfit','Objektiv',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans); color:var(--ink);
+    background:radial-gradient(120% 90% at 50% -10%, #FBF6EA 0%, var(--creme) 46%, var(--areia) 100%);
+    min-height:100dvh; overflow-x:hidden;
+  }
+  /* barra de progresso */
+  #prog{position:fixed; top:0; left:0; right:0; height:4px; background:rgba(24,69,62,.10); z-index:20}
+  #prog i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--verde),var(--caramel));
+    border-radius:0 4px 4px 0; transition:width .5s cubic-bezier(.22,.61,.36,1)}
+  /* topo: Manu anfitriã */
+  .host{position:fixed; top:18px; left:0; right:0; display:flex; align-items:center; justify-content:center; z-index:10;
+    padding-top:env(safe-area-inset-top)}
+  .host .logo{height:26px; width:auto; display:block}
+  /* palco */
+  #stage{min-height:100dvh; display:flex; align-items:center; justify-content:center;
+    padding:96px 22px max(40px, calc(env(safe-area-inset-bottom) + 24px))}
+  .wrap{width:100%; max-width:600px}
+  .q{opacity:0; transform:translateY(16px); animation:qin .5s cubic-bezier(.22,.61,.36,1) forwards}
+  .q.leaving{animation:qout .24s ease forwards}
+  @keyframes qin{to{opacity:1; transform:none}}
+  @keyframes qout{to{opacity:0; transform:translateY(-12px)}}
+  /* botão voltar (corrigir resposta) */
+  .back{display:inline-flex; align-items:center; gap:5px; background:none; border:0; cursor:pointer; font-family:inherit;
+    color:var(--moss); font-size:13.5px; font-weight:600; padding:11px 6px 11px 2px; min-height:44px; margin-bottom:2px; opacity:.85}
+  .back:hover{opacity:1; color:var(--verde)}
+  :focus-visible{outline:2px solid var(--verde); outline-offset:2px; border-radius:6px}
+  .eyebrow{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--caramel); font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px}
+  .eyebrow b{color:var(--moss); font-weight:600}
+  h1.qt{font-family:var(--serif); font-weight:600; font-size:clamp(26px,5vw,36px); line-height:1.18; letter-spacing:-.01em; color:var(--verde); text-wrap:balance}
+  p.sub{font-size:15.5px; color:var(--moss); line-height:1.55; margin-top:12px}
+  .opts{display:flex; flex-direction:column; gap:11px; margin-top:26px}
+  .opt{display:flex; align-items:center; gap:14px; width:100%; text-align:left; cursor:pointer;
+    background:#fff; border:1.5px solid var(--linha); border-radius:15px; padding:16px 17px;
+    font-family:inherit; font-size:16px; color:var(--ink); transition:border-color .15s, background .15s, transform .06s}
+  .opt:hover{border-color:rgba(24,69,62,.55); background:#fffdf8}
+  .opt.sel{border-color:var(--verde); background:var(--verde); color:var(--creme)}
+  .opt .k{flex:0 0 auto; width:26px; height:26px; border-radius:7px; border:1.5px solid rgba(24,69,62,.3);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--verde); background:rgba(24,69,62,.04)}
+  .opt.sel .k{background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.4); color:var(--creme)}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:24px}
+  .chip{border:1.5px solid rgba(24,69,62,.28); background:rgba(24,69,62,.05); color:var(--verde);
+    border-radius:99px; padding:13px 18px; min-height:44px; font-size:15px; cursor:pointer; font-family:inherit; transition:background .15s}
+  .chip:hover{background:rgba(24,69,62,.13)}
+  .field{margin-top:26px}
+  .field input{width:100%; border:0; border-bottom:2px solid var(--linha); background:transparent;
+    font-family:var(--serif); font-size:clamp(20px,3.5vw,26px); color:var(--verde); padding:8px 2px; outline:none}
+  .field input::placeholder{color:rgba(24,69,62,.32)}
+  .field input:focus{border-color:var(--verde)}
+  .go{margin-top:22px; display:flex; align-items:center; gap:12px}
+  .btn{background:var(--verde); color:var(--creme); border:0; border-radius:12px; padding:15px 28px;
+    font-size:15px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s}
+  .btn:hover{background:var(--verde2)}
+  .btn:disabled{opacity:.55; cursor:default}
+  .wrap.busy{pointer-events:none}
+  .thinking{display:flex; gap:6px; align-items:center; margin-top:26px}
+  .thinking i{width:7px; height:7px; border-radius:50%; background:var(--verde); opacity:.35; animation:dot 1s infinite}
+  .thinking i:nth-child(2){animation-delay:.15s}
+  .thinking i:nth-child(3){animation-delay:.3s}
+  @keyframes dot{0%,60%,100%{opacity:.25; transform:translateY(0)} 30%{opacity:.9; transform:translateY(-3px)}}
+  @media (prefers-reduced-motion:reduce){ .thinking i{animation:none} }
+  .hint{font-size:12.5px; color:var(--moss)}
+  .hint b{font-weight:700; color:var(--ink)}
+  .row{display:flex; gap:10px}
+  select.ddi{flex:0 0 auto; border:0; border-bottom:2px solid var(--linha); background:transparent;
+    font-family:var(--serif); font-size:22px; color:var(--verde); padding:8px 2px; outline:none}
+  select.ddi:focus{border-color:var(--verde)}
+  .err{color:#B5502A; font-size:13.5px; min-height:18px; margin-top:10px}
+  /* fim */
+  .done .mark{width:56px; height:56px; border-radius:50%; background:var(--verde); color:var(--creme);
+    display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:20px}
+  .doneb{font-size:16px; line-height:1.6; color:var(--ink); white-space:pre-wrap; word-wrap:break-word}
+  .doneb a{color:var(--verde); font-weight:600; text-decoration:underline; text-underline-offset:2px; word-break:break-word}
+  .fine{font-size:12px; color:var(--moss); margin-top:26px; line-height:1.5}
+  @media (prefers-reduced-motion:reduce){ .q,.q.leaving{animation:none; opacity:1; transform:none} #prog i{transition:none} }
+</style>
+</head>
+<body>
+  <div id="prog"><i id="progbar"></i></div>
+  <div class="host"><img class="logo" src="https://app.tidelli.com/brand/tidelli-green-alpha.png" alt="Tidelli" /></div>
+  <div id="stage"><div class="wrap" id="wrap"></div></div>
+
+<script>
+(function(){
+  var API="https://app.tidelli.com/api/manu/conversa";
+  var wrap=document.getElementById("wrap"), bar=document.getElementById("progbar");
+  var convId=null, answered=0, ABC="ABCDEFGH";
+  var busy=false, lastR=null, gen=0, SKEY="manu-form-state";
+
+  function post(b){return fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)}).then(function(r){return r.json();});}
+  // Persistência leve (só nesta aba): sobrevive a um F5/recarregar sem perder o lead
+  function save(){ try{ if(convId&&lastR) sessionStorage.setItem(SKEY,JSON.stringify({convId:convId,answered:answered,r:lastR})); }catch(e){} }
+  function clearSave(){ try{ sessionStorage.removeItem(SKEY); }catch(e){} }
+  function setBusy(on){
+    busy=on; wrap.classList.toggle("busy",on);
+    var ok=document.getElementById("ok"); if(ok) ok.disabled=on;
+    var t=document.getElementById("think"), q=wrap.querySelector(".q");
+    if(on && !t && q){ var d=document.createElement("div"); d.className="thinking"; d.id="think"; d.innerHTML="<i></i><i></i><i></i>"; q.appendChild(d); }
+    else if(!on && t){ t.remove(); }
+  }
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function linkLabel(u){
+    if(/maps\.app\.goo\.gl|google\.[^\/]*\/maps|goo\.gl\/maps/.test(u)) return "Ver no Google Maps";
+    if(/youtube\.com|youtu\.be/.test(u)) return "Ver no YouTube";
+    if(/tidelli\.[^\/]*\/blogs|\/journal/.test(u)) return "Ler o blog Tidelli";
+    if(/wa\.me|api\.whatsapp|whatsapp\.com/.test(u)) return "Abrir no WhatsApp";
+    var h=(u.match(/^(?:https?:\/\/)?([^\/]+)/)||[])[1]||u; return h.replace(/^www\./,"");
+  }
+  function linkify(t){return esc(t).replace(/((?:https?:\/\/|www\.|wa\.me\/)[^\s<]+)/g,function(u){var tr="",m=u.match(/[)\].,;:!?]+$/);if(m){tr=m[0];u=u.slice(0,-tr.length);}var h=/^https?:\/\//.test(u)?u:"https://"+u;return '<a href="'+h+'" target="_blank" rel="noopener noreferrer">'+esc(linkLabel(u))+"</a>"+tr;});}
+  function setProg(p){bar.style.width=Math.max(4,Math.min(100,p))+"%";}
+
+  function paint(html,then){
+    var prev=wrap.querySelector(".q");
+    function go(){ wrap.innerHTML='<div class="q">'+html+'</div>'; if(then) setTimeout(then,30); }
+    if(prev){ prev.classList.add("leaving"); setTimeout(go,220); } else { go(); }
+  }
+
+  // ---- Telefone: máscara + validação (espelha as regras do servidor) ----
+  // O WhatsApp é a chave do lead: se entrar torto, a loja não consegue chamar e o lead
+  // não vale nada. Então aqui a gente CORRIGE o que dá (DDI 55 repetido), AVISA o que
+  // está errado e BLOQUEIA o envio até ficar certo. Nunca "inventa" dígito faltando.
+  var DDDS = "11,12,13,14,15,16,17,18,19,21,22,24,27,28,31,32,33,34,35,37,38,41,42,43,44,45,46,47,48,49,51,53,54,55,61,62,63,64,65,66,67,68,69,71,73,74,75,77,79,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99".split(",");
+  // tira o "55" que a pessoa digita a mais (o seletor de DDI já manda o 55).
+  // O guarda length>11 protege o DDD 55 (RS), que é legítimo.
+  function limpaFone(v){
+    var d = (v||"").replace(/\D/g,"");
+    while (d.length > 11 && d.indexOf("55") === 0) d = d.slice(2);
+    return d.slice(0,11);
+  }
+  function mascaraFone(d){
+    if(!d) return "";
+    if(d.length <= 2) return "(" + d;
+    if(d.length <= 6) return "(" + d.slice(0,2) + ") " + d.slice(2);
+    if(d.length <= 10) return "(" + d.slice(0,2) + ") " + d.slice(2,6) + "-" + d.slice(6);
+    return "(" + d.slice(0,2) + ") " + d.slice(2,7) + "-" + d.slice(7);
+  }
+  function validaFoneBR(d){
+    if(!d) return "Informe seu WhatsApp com DDD.";
+    if(d.length === 10) return "Faltou um dígito — celular tem 11 (DDD + 9 + 8 números).";
+    if(d.length !== 11) return d.length < 11 ? "Número incompleto — precisa de DDD + 9 dígitos." : "Número com dígitos demais.";
+    var ddd = d.slice(0,2);
+    if(DDDS.indexOf(ddd) < 0) return "DDD " + ddd + " não existe no Brasil. Confira o DDD.";
+    var c = d.slice(2);
+    if(c.charAt(0) !== "9") return "Precisa ser um celular (DDD + 9 + 8 dígitos).";
+    if(/^(\d)\1+$/.test(c) || /^(\d)\1+$/.test(c.slice(1))) return "Esse número não parece real. Pode conferir?";
+    return "";
+  }
+
+  // ---- Tela inicial (boas-vindas + WhatsApp) ----
+  function welcome(){
+    setProg(4);
+    paint(
+      '<div class="eyebrow">Atendimento Tidelli</div>'+
+      '<h1 class="qt">Oi! Eu sou a Manu 🌿</h1>'+
+      '<p class="sub">Em um minutinho eu te encontro a loja Tidelli certa pra você. Vamos?</p>'+
+      '<div class="field"><div class="row">'+
+        '<select class="ddi" id="ddi" aria-label="Código do país (DDI)"><option value="55">🇧🇷 +55</option><option value="1">🇺🇸 +1</option><option value="351">🇵🇹 +351</option><option value="54">🇦🇷 +54</option></select>'+
+        '<input id="phone" type="tel" inputmode="numeric" placeholder="(11) 90000-0000" autocomplete="tel-national" aria-label="Seu WhatsApp com DDD" />'+
+      '</div></div>'+
+      '<div class="err" id="err" role="alert" aria-live="polite"></div>'+
+      '<div class="go"><button class="btn" id="start">Começar →</button><span class="hint">seu WhatsApp fica seguro (LGPD)</span></div>'
+    , function(){
+      var ph=document.getElementById("phone"), dd=document.getElementById("ddi"), er=document.getElementById("err"), bt=document.getElementById("start");
+      var digitos = function(){ return dd.value === "55" ? limpaFone(ph.value) : (ph.value||"").replace(/\D/g,""); };
+      // máscara ao digitar (só BR) — já corrige o "55" a mais na hora, a pessoa vê o número certo
+      ph.addEventListener("input", function(){
+        if(er.textContent) er.textContent = "";
+        if(dd.value !== "55") return;
+        var noFim = ph.selectionStart === ph.value.length;
+        var f = mascaraFone(limpaFone(ph.value));
+        if(ph.value !== f){ ph.value = f; if(noFim){ try{ ph.setSelectionRange(f.length, f.length); }catch(e){} } }
+      });
+      // avisa assim que sai do campo, sem esperar o clique
+      ph.addEventListener("blur", function(){
+        var d = digitos();
+        if(d && dd.value === "55") er.textContent = validaFoneBR(d);
+      });
+      dd.addEventListener("change", function(){ er.textContent = ""; });
+      function begin(){
+        if(bt.disabled) return;   // trava contra duplo-submit (Enter+clique / dois Enter)
+        var d=digitos(), isBR=dd.value==="55";
+        // BLOQUEIA o envio se o número não for válido — número torto não entra na base.
+        var msg = isBR ? validaFoneBR(d) : (d.length < 6 ? "Confira o número com o código do país." : "");
+        if(msg){ er.textContent=msg; ph.focus(); return; }
+        bt.disabled=true; bt.textContent="Só um instante…";
+        var q=new URLSearchParams(location.search);
+        var utm={source:q.get("utm_source")||"manu-form",medium:q.get("utm_medium")||undefined,campaign:q.get("utm_campaign")||undefined,content:q.get("utm_content")||undefined,term:q.get("utm_term")||undefined};
+        // se em popup na LP: avisa a página pra disparar os pixels de conversão + captura no funil
+        if(window.self!==window.top){ try{ window.parent.postMessage({manuForm:"lead", whatsapp:dd.value+d}, "*"); }catch(e){} }
+        post({acao:"iniciar",whatsapp:dd.value+d,utm:utm,landing_url:location.href})
+          .then(function(r){ if(r&&r.conversaId){ convId=r.conversaId; answered=1; render(r); } else { er.textContent="Não consegui iniciar. Tente novamente."; bt.disabled=false; bt.textContent="Começar →"; } })
+          .catch(function(){ er.textContent="Falha de conexão. Tente novamente."; bt.disabled=false; bt.textContent="Começar →"; });
+      }
+      bt.addEventListener("click",begin);
+      ph.addEventListener("keydown",function(e){ if(e.key==="Enter"){e.preventDefault();begin();} });
+      ph.addEventListener("focus",function(){ setTimeout(function(){ try{ph.scrollIntoView({block:"center"});}catch(e){} },250); });
+      ph.focus();
+    });
+  }
+
+  // ---- Render de cada pergunta vinda do backend ----
+  function render(r){
+    if(!r || r.error){ paint('<h1 class="qt">Ops, algo saiu do lugar.</h1><p class="sub">Pode recarregar a página e tentar de novo? 💚</p>'); return; }
+    if(r.fim){ clearSave(); return fim(r); }
+    lastR=r; save();
+    var g=(++gen);                // geração: invalida handlers de perguntas já superadas
+    setProg(Math.min(92, answered/9*100));
+    var backBtn = answered>1 ? '<button class="back" id="back" type="button">← voltar</button>' : '';
+    var eb=backBtn+'<div class="eyebrow"><b>Manu</b> · pergunta '+answered+'</div>';
+    var qt='<h1 class="qt" id="qt" tabindex="-1">'+esc(r.pergunta)+'</h1>';
+    function focusQ(){ var h=document.getElementById("qt"); if(h){ try{h.focus({preventScroll:true});}catch(e){} try{h.scrollIntoView({block:"center"});}catch(e){} } }
+    if(r.tipo==="menu" && r.opcoes && r.opcoes.length){
+      var o='<div class="opts">'+r.opcoes.map(function(op,i){return '<button class="opt" data-v="'+esc(op.valor)+'"><span class="k">'+(ABC[i]||(i+1))+'</span><span>'+esc(op.rotulo)+'</span></button>';}).join("")+'</div>';
+      paint(eb+qt+o, function(){
+        if(g!==gen)return;
+        wireBack(g); focusQ();
+        wrap.querySelectorAll(".opt").forEach(function(b){ b.addEventListener("click",function(){ if(busy||g!==gen||wrap.querySelector(".opt.sel"))return; b.classList.add("sel"); setTimeout(function(){ if(busy||g!==gen)return; answer(b.getAttribute("data-v")); },230); }); });
+      });
+    } else {
+      var chips = (r.sugestoes&&r.sugestoes.length) ? '<div class="chips">'+r.sugestoes.map(function(s){return '<button class="chip" data-v="'+esc(s)+'">'+esc(s)+'</button>';}).join("")+'</div>' : "";
+      var f='<div class="field"><input id="inp" type="text" aria-label="Sua resposta" placeholder="Escreva aqui…" /></div>'+
+            '<div class="go"><button class="btn" id="ok">OK ✓</button><span class="hint">ou pressione <b>Enter ↵</b></span></div>';
+      paint(eb+qt+chips+f, function(){
+        if(g!==gen)return;
+        wireBack(g);
+        var inp=document.getElementById("inp"), ok=document.getElementById("ok");
+        function go(){ if(busy||g!==gen)return; var v=(inp.value||"").trim(); if(!v)return; answer(v); }
+        ok.addEventListener("click",go);
+        inp.addEventListener("keydown",function(e){ if(e.key==="Enter"){e.preventDefault();go();} });
+        wrap.querySelectorAll(".chip").forEach(function(c){ c.addEventListener("click",function(){ if(busy||g!==gen)return; answer(c.getAttribute("data-v")); }); });
+        inp.addEventListener("focus",function(){ setTimeout(function(){ try{inp.scrollIntoView({block:"center"});}catch(e){} },250); }); // re-rola após o teclado abrir
+        inp.focus(); try{ inp.scrollIntoView({block:"center"}); }catch(e){}
+      });
+    }
+  }
+
+  function wireBack(g){ var bk=document.getElementById("back"); if(bk) bk.addEventListener("click",function(){ if(g!==gen)return; voltarPasso(); }); }
+  function voltarPasso(){
+    if(busy) return;
+    setBusy(true);
+    post({acao:"voltar",conversaId:convId})
+      .then(function(r){ answered=Math.max(1,answered-1); setBusy(false); render(r); })
+      .catch(function(){ setBusy(false); });
+  }
+
+  function answer(v){
+    if(busy) return;              // trava de requisição em voo (evita duplo-envio e resposta stale)
+    setBusy(true);
+    post({acao:"responder",conversaId:convId,resposta:String(v)})
+      .then(function(r){ answered++; setBusy(false); render(r); })  // só avança o contador se o POST deu certo
+      .catch(function(){ setBusy(false); falhaConexao(); });
+  }
+
+  // Falha de rede: NÃO é beco sem saída — resposta preservada, botão pra tentar de novo
+  function falhaConexao(){
+    paint(
+      '<div class="eyebrow">Conexão</div>'+
+      '<h1 class="qt">A conexão oscilou.</h1>'+
+      '<p class="sub">Sem problema — tudo o que você respondeu até aqui está salvo. É só tentar de novo. 💚</p>'+
+      '<div class="go"><button class="btn" id="retry">Tentar de novo</button></div>',
+      function(){ var b=document.getElementById("retry"); if(b) b.addEventListener("click",function(){ if(lastR) render(lastR); else welcome(); }); }
+    );
+  }
+
+  function fim(r){
+    setProg(100);
+    var emPopup = window.self !== window.top; // rodando dentro do modal (iframe) da LP
+    paint(
+      '<div class="done"><div class="mark">✓</div>'+
+      '<div class="doneb">'+linkify(r.pergunta)+'</div>'+
+      '<div class="go"><button class="btn" id="voltar">'+(emPopup?"Fechar":"Voltar para a página")+'</button></div>'+
+      '<div class="fine">Ao continuar, você concorda com o tratamento dos dados conforme a LGPD.</div></div>'
+    , function(){
+      var b=document.getElementById("voltar");
+      if(b) b.addEventListener("click",function(){
+        if(emPopup){ try{ window.parent.postMessage({manuForm:"close"}, "*"); }catch(e){} return; }
+        var ref=document.referrer||"";
+        location.href = /tidelli\./.test(ref) ? ref : "https://www.tidelli.com/";
+      });
+    });
+  }
+
+  // Inicia já com o telefone que a LP coletou (pula a tela de telefone). Sem tela de boas-vindas.
+  function iniciarComTelefone(ph){
+    var q=new URLSearchParams(location.search);
+    var utm={source:q.get("utm_source")||"manu-form",medium:q.get("utm_medium")||undefined,campaign:q.get("utm_campaign")||undefined,content:q.get("utm_content")||undefined,term:q.get("utm_term")||undefined};
+    setProg(6);
+    paint('<div class="eyebrow">Atendimento Tidelli</div><h1 class="qt">Só um instante… 🌿</h1><p class="sub">Já estou preparando seu atendimento.</p><div class="thinking"><i></i><i></i><i></i></div>');
+    post({acao:"iniciar",whatsapp:ph,utm:utm,landing_url:location.href})
+      .then(function(r){ if(r&&r.conversaId){ convId=r.conversaId; answered=1; render(r); } else { welcome(); } })
+      .catch(function(){ welcome(); });
+  }
+
+  // Restaura a conversa em andamento após um recarregar (F5); senão: telefone da URL (veio da LP) → welcome
+  function boot(){
+    try{
+      var raw=sessionStorage.getItem(SKEY);
+      if(raw){ var s=JSON.parse(raw); if(s&&s.convId&&s.r&&!s.r.fim){ convId=s.convId; answered=s.answered||1; render(s.r); return; } }
+    }catch(e){}
+    var ph=(new URLSearchParams(location.search).get("phone")||"").replace(/\D/g,"");
+    if(ph.length>=8){ iniciarComTelefone(ph); return; }
+    welcome();
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
